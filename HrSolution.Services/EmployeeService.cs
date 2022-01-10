@@ -36,6 +36,26 @@ namespace HrSolution.Services
                 Status = QueueStatus.NEW
             });
 
+            var hrManagers = _unitofWork.EmployeeRepository.Get(x => x.User.UserRoles.Any(x => x.Role.Name == "hrmanagers"));
+
+            foreach(var hrManager in hrManagers)
+			{
+                notification = new Notification()
+                {
+                    EmployeeId = hrManager.Id,
+                    NotificationType = NotificationType.profile_update,
+                    Route = $"/profile/{currentUser.UserName}",
+                    Message = $"profile of {currentUser.UserName} has been updated"
+                };
+                _unitofWork.NotificationRepository.Add(notification);
+
+                _unitofWork.NotificationQueueRepository.Add(new()
+                {
+                    Notification = notification,
+                    Status = QueueStatus.NEW
+                });
+            }
+
             _unitofWork.Save();
 
         }
